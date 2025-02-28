@@ -34,7 +34,7 @@ Vite
 
 git clone https://github.com/domango2/currency_converter
 
-cd currency-converter
+cd currency_converter
 
 Установите зависимости:
 
