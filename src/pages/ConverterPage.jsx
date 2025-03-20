@@ -1,10 +1,10 @@
 import CurrencyConverter from "../components/CurrencyConverter";
+import PageWrapper from "../components/PageWrapper";
 
 export default function ConverterPage() {
   return (
-    <div className="container my-4">
-      <h1 className="text-center mb-4">Конвертер валют</h1>
+    <PageWrapper title="Конвертер валют">
       <CurrencyConverter />
-    </div>
+    </PageWrapper>
   );
 }
