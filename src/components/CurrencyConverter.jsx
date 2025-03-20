@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getRates } from "../services/currencyAPI";
 import debounce from "lodash.debounce";
+import CurrencySwapButton from "./CurrencySwapButton";
 
 export default function CurrencyConverter() {
   const [rates, setRates] = useState({});
@@ -49,11 +50,12 @@ export default function CurrencyConverter() {
     setTargetCurrency(baseCurrency);
   };
 
+  const usedCurrencies = ["BYN", "USD", "EUR", "RUB", "PLN", "CNY", "GBP"];
+
   return (
     <div className="card shadow-sm mb-4 mx-auto" style={{ maxWidth: "800px" }}>
       <div className="card-body">
         {error && <div className="alert alert-danger">{error}</div>}
-
         <div className="mb-3 row align-items-center">
           <label className="col-sm-1 col-form-label fw-semibold">Из:</label>
           <div className="col-sm-3">
@@ -62,7 +64,7 @@ export default function CurrencyConverter() {
               onChange={(e) => setBaseCurrency(e.target.value)}
               className="form-select"
             >
-              {["BYN", "USD", "EUR", "RUB", "PLN", "CNY", "GBP"].map((curr) => (
+              {usedCurrencies.map((curr) => (
                 <option key={curr} value={curr}>
                   {curr}
                 </option>
@@ -79,31 +81,7 @@ export default function CurrencyConverter() {
             />
           </div>
         </div>
-
-        <div className="d-flex justify-content-center mb-3">
-          <button
-            onClick={handleSwap}
-            className="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-            title="Поменять валюты местами"
-            style={{ width: "48px", height: "48px", padding: "0" }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              className="bi bi-arrow-down-up"
-              viewBox="0 0 16 16"
-              style={{ display: "block", margin: "auto" }}
-            >
-              <path
-                fillRule="evenodd"
-                d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5m-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5"
-              />
-            </svg>
-          </button>
-        </div>
-
+        <CurrencySwapButton onClick={handleSwap} />
         <div className="mb-3 row align-items-center">
           <label className="col-sm-1 col-form-label fw-semibold">В:</label>
           <div className="col-sm-3">
@@ -112,7 +90,7 @@ export default function CurrencyConverter() {
               onChange={(e) => setTargetCurrency(e.target.value)}
               className="form-select"
             >
-              {["BYN", "USD", "EUR", "RUB", "PLN", "CNY", "GBP"].map((curr) => (
+              {usedCurrencies.map((curr) => (
                 <option key={curr} value={curr}>
                   {curr}
                 </option>
