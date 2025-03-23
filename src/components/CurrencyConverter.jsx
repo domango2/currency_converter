@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 import { getRates } from "../services/currencyAPI";
-import debounce from "lodash.debounce";
 import CurrencySwapButton from "./CurrencySwapButton";
+
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function CurrencyConverter() {
   const [rates, setRates] = useState({});
@@ -10,6 +23,8 @@ export default function CurrencyConverter() {
   const [amount, setAmount] = useState("1");
   const [convertedAmount, setConvertedAmount] = useState(0);
   const [error, setError] = useState(null);
+
+  const debouncedAmount = useDebounce(amount, 200);
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -26,23 +41,20 @@ export default function CurrencyConverter() {
   }, [baseCurrency]);
 
   useEffect(() => {
-    if (amount === "") {
+    if (debouncedAmount === "") {
       setConvertedAmount(0);
     } else if (rates[targetCurrency] && rates[baseCurrency]) {
       const baseRate = rates[baseCurrency];
       const targetRate = rates[targetCurrency];
-      const convertedValue = (parseFloat(amount) * targetRate) / baseRate;
+      const convertedValue =
+        (parseFloat(debouncedAmount) * targetRate) / baseRate;
       setConvertedAmount(Math.round(convertedValue * 100) / 100);
     }
-  }, [amount, rates, targetCurrency, baseCurrency]);
-
-  const debouncedSetAmount = debounce((val) => {
-    setAmount(val);
-  }, 200);
+  }, [debouncedAmount, rates, targetCurrency, baseCurrency]);
 
   const handleAmountChange = (e) => {
     const value = e.target.value.replace(/[^0-9.]/g, "");
-    debouncedSetAmount(value || "");
+    setAmount(value || "");
   };
 
   const handleSwap = () => {
