@@ -9,29 +9,39 @@ export default function CurrencyRates() {
   const [baseCurrency, setBaseCurrency] = useState("USD");
 
   useEffect(() => {
+    setFavorites((prevFavorites) => {
+      const updatedFavorites = prevFavorites.filter(
+        (currency) => currency !== baseCurrency
+      );
+      saveFavorites(updatedFavorites);
+      return updatedFavorites;
+    });
+
+    const controller = new AbortController();
     const fetchRates = async () => {
       try {
-        const fetchedRates = await getRates(baseCurrency);
+        const fetchedRates = await getRates(baseCurrency, controller.signal);
         setRates(fetchedRates);
       } catch (error) {
-        console.error(error);
+        if (error.name !== "AbortError") {
+          console.error(error);
+        }
       }
     };
     fetchRates();
+
+    return () => controller.abort();
   }, [baseCurrency]);
 
   const toggleFavorite = (currency) => {
-    let updatedFavorites = [...favorites];
-    if (updatedFavorites.includes(currency)) {
-      updatedFavorites = updatedFavorites.filter((item) => item !== currency);
-    } else {
-      if (updatedFavorites.length >= 6) {
-        updatedFavorites.pop();
-      }
-      updatedFavorites.unshift(currency);
-    }
-    setFavorites(updatedFavorites);
-    saveFavorites(updatedFavorites);
+    setFavorites((prevFavorites) => {
+      let updatedFavorites = prevFavorites.includes(currency)
+        ? prevFavorites.filter((item) => item !== currency)
+        : [currency, ...prevFavorites.slice(0, 5)];
+
+      saveFavorites(updatedFavorites);
+      return updatedFavorites;
+    });
   };
 
   const handleDragStart = (e, currency) => {
@@ -40,14 +50,19 @@ export default function CurrencyRates() {
 
   const handleDrop = (e, targetCurrency) => {
     const draggedCurrency = e.dataTransfer.getData("currency");
-    if (draggedCurrency === targetCurrency) return;
-    const updatedFavorites = [...favorites];
-    const draggedIndex = updatedFavorites.indexOf(draggedCurrency);
-    const targetIndex = updatedFavorites.indexOf(targetCurrency);
-    updatedFavorites.splice(draggedIndex, 1);
-    updatedFavorites.splice(targetIndex, 0, draggedCurrency);
-    setFavorites(updatedFavorites);
-    saveFavorites(updatedFavorites);
+    if (!draggedCurrency || draggedCurrency === targetCurrency) return;
+
+    setFavorites((prevFavorites) => {
+      const updatedFavorites = [...prevFavorites];
+      const draggedIndex = updatedFavorites.indexOf(draggedCurrency);
+      const targetIndex = updatedFavorites.indexOf(targetCurrency);
+
+      updatedFavorites.splice(draggedIndex, 1);
+      updatedFavorites.splice(targetIndex, 0, draggedCurrency);
+
+      saveFavorites(updatedFavorites);
+      return updatedFavorites;
+    });
   };
 
   const handleDragOver = (e) => {
@@ -55,7 +70,8 @@ export default function CurrencyRates() {
   };
 
   const usedCurrencies = ["USD", "EUR", "RUB", "PLN", "CNY", "GBP", "BYN"];
-  const formatAmount = (amount) => (amount ? amount.toFixed(2) : "0.00");
+  const formatAmount = (amount) =>
+    typeof amount === "number" ? amount.toFixed(2) : "—";
 
   const sortedCurrencies = [
     ...favorites,
