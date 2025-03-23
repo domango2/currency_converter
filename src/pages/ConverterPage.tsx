@@ -1,5 +1,5 @@
-import CurrencyConverter from "../components/CurrencyConverter";
-import PageWrapper from "../components/PageWrapper";
+import CurrencyConverter from "../components/CurrencyConverter.tsx";
+import PageWrapper from "../components/PageWrapper.tsx";
 
 export default function ConverterPage() {
   return (

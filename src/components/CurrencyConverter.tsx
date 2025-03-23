@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getRates } from "../services/currencyAPI";
-import CurrencySwapButton from "./CurrencySwapButton";
+import { getRates } from "../services/currencyAPI.ts";
+import CurrencySwapButton from "./CurrencySwapButton.tsx";
 
-function useDebounce(value, delay) {
+function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
@@ -17,12 +17,12 @@ function useDebounce(value, delay) {
 }
 
 export default function CurrencyConverter() {
-  const [rates, setRates] = useState({});
-  const [baseCurrency, setBaseCurrency] = useState("USD");
-  const [targetCurrency, setTargetCurrency] = useState("BYN");
-  const [amount, setAmount] = useState("1");
-  const [convertedAmount, setConvertedAmount] = useState(0);
-  const [error, setError] = useState(null);
+  const [rates, setRates] = useState<Record<string, number>>({});
+  const [baseCurrency, setBaseCurrency] = useState<string>("USD");
+  const [targetCurrency, setTargetCurrency] = useState<string>("BYN");
+  const [amount, setAmount] = useState<string>("1");
+  const [convertedAmount, setConvertedAmount] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
 
   const debouncedAmount = useDebounce(amount, 200);
 
@@ -52,7 +52,7 @@ export default function CurrencyConverter() {
     }
   }, [debouncedAmount, rates, targetCurrency, baseCurrency]);
 
-  const handleAmountChange = (e) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9.]/g, "");
     setAmount(value || "");
   };
@@ -62,7 +62,15 @@ export default function CurrencyConverter() {
     setTargetCurrency(baseCurrency);
   };
 
-  const usedCurrencies = ["BYN", "USD", "EUR", "RUB", "PLN", "CNY", "GBP"];
+  const usedCurrencies: string[] = [
+    "BYN",
+    "USD",
+    "EUR",
+    "RUB",
+    "PLN",
+    "CNY",
+    "GBP",
+  ];
 
   return (
     <div className="card shadow-sm mb-4 mx-auto" style={{ maxWidth: "800px" }}>

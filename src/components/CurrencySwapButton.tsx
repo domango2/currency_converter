@@ -1,6 +1,12 @@
-import swapIcon from "@/assets/icons/arrow-down-up.svg";
+import swapIcon from "../assets/icons/arrow-down-up.svg";
 
-export default function CurrencySwapButton({ onClick }) {
+interface CurrencySwapButtonProps {
+  onClick: () => void;
+}
+
+export default function CurrencySwapButton({
+  onClick,
+}: CurrencySwapButtonProps) {
   return (
     <div className="d-flex justify-content-center mb-3">
       <button

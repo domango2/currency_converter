@@ -1,7 +1,15 @@
-import starIcon from "@/assets/icons/star.svg";
-import starFillIcon from "@/assets/icons/star-fill.svg";
+import starIcon from "../assets/icons/star.svg";
+import starFillIcon from "../assets/icons/star-fill.svg";
 
-export default function FavoriteButton({ isFavorite, onClick }) {
+interface FavoriteButtonProps {
+  isFavorite: boolean;
+  onClick: () => void;
+}
+
+export default function FavoriteButton({
+  isFavorite,
+  onClick,
+}: FavoriteButtonProps) {
   return (
     <button
       className="btn p-0 ms-2"

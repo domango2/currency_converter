@@ -1,5 +1,5 @@
-import CurrencyRates from "../components/CurrencyRates";
-import PageWrapper from "../components/PageWrapper";
+import CurrencyRates from "../components/CurrencyRates.tsx";
+import PageWrapper from "../components/PageWrapper.tsx";
 
 export default function CurrencyRatesPage() {
   return (

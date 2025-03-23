@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { getRates } from "../services/currencyAPI";
-import { loadFavorites, saveFavorites } from "../utils/favorites";
-import FavoriteButton from "./FavoritesButton";
+import { getRates } from "../services/currencyAPI.ts";
+import { loadFavorites, saveFavorites } from "../utils/favorites.ts";
+import FavoriteButton from "./FavoritesButton.tsx";
+
+type Rates = Record<string, number>;
 
 export default function CurrencyRates() {
-  const [rates, setRates] = useState({});
-  const [favorites, setFavorites] = useState(loadFavorites());
-  const [baseCurrency, setBaseCurrency] = useState("USD");
+  const [rates, setRates] = useState<Rates>({});
+  const [favorites, setFavorites] = useState<string[]>(loadFavorites());
+  const [baseCurrency, setBaseCurrency] = useState<string>("USD");
 
   useEffect(() => {
     setFavorites((prevFavorites) => {
@@ -23,7 +25,7 @@ export default function CurrencyRates() {
         const fetchedRates = await getRates(baseCurrency, controller.signal);
         setRates(fetchedRates);
       } catch (error) {
-        if (error.name !== "AbortError") {
+        if ((error as Error).name !== "AbortError") {
           console.error(error);
         }
       }
@@ -33,7 +35,7 @@ export default function CurrencyRates() {
     return () => controller.abort();
   }, [baseCurrency]);
 
-  const toggleFavorite = (currency) => {
+  const toggleFavorite = (currency: string) => {
     setFavorites((prevFavorites) => {
       let updatedFavorites = prevFavorites.includes(currency)
         ? prevFavorites.filter((item) => item !== currency)
@@ -44,11 +46,17 @@ export default function CurrencyRates() {
     });
   };
 
-  const handleDragStart = (e, currency) => {
+  const handleDragStart = (
+    e: React.DragEvent<HTMLButtonElement>,
+    currency: string
+  ) => {
     e.dataTransfer.setData("currency", currency);
   };
 
-  const handleDrop = (e, targetCurrency) => {
+  const handleDrop = (
+    e: React.DragEvent<HTMLElement>,
+    targetCurrency: string
+  ) => {
     const draggedCurrency = e.dataTransfer.getData("currency");
     if (!draggedCurrency || draggedCurrency === targetCurrency) return;
 
@@ -65,12 +73,20 @@ export default function CurrencyRates() {
     });
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const usedCurrencies = ["USD", "EUR", "RUB", "PLN", "CNY", "GBP", "BYN"];
-  const formatAmount = (amount) =>
+  const usedCurrencies: string[] = [
+    "USD",
+    "EUR",
+    "RUB",
+    "PLN",
+    "CNY",
+    "GBP",
+    "BYN",
+  ];
+  const formatAmount = (amount: number | "—") =>
     typeof amount === "number" ? amount.toFixed(2) : "—";
 
   const sortedCurrencies = [
@@ -103,6 +119,7 @@ export default function CurrencyRates() {
               <div
                 className="d-flex flex-wrap gap-2 mb-4"
                 onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, "")}
               >
                 {favorites.map((currency) => (
                   <button
@@ -110,7 +127,6 @@ export default function CurrencyRates() {
                     className="btn btn-outline-secondary"
                     draggable
                     onDragStart={(e) => handleDragStart(e, currency)}
-                    onDrop={(e) => handleDrop(e, currency)}
                     onClick={() => toggleFavorite(currency)}
                   >
                     {currency}

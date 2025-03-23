@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import ConverterPage from "@/pages/ConverterPage";
-import CurrencyRatesPage from "@/pages/CurrencyRatesPage";
+import Navbar from "./components/NavBar.tsx";
+import ConverterPage from "./pages/ConverterPage.tsx";
+import CurrencyRatesPage from "./pages/CurrencyRatesPage.tsx";
 
 export default function App() {
   return (
