@@ -15,7 +15,7 @@ export default function CurrencyConverter() {
     const fetchRates = async () => {
       try {
         const fetchedRates = await getRates(baseCurrency);
-        setRates(fetchedRates);
+        setRates((prevRates) => ({ ...prevRates, ...fetchedRates }));
         setError(null);
       } catch (err) {
         setError("Не удалось загрузить курсы валют. Попробуйте позже.");
