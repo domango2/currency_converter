@@ -2,13 +2,25 @@ import { useState, useEffect } from "react";
 import { getRates } from "../services/currencyAPI.ts";
 import { loadFavorites, saveFavorites } from "../utils/favorites.ts";
 import FavoriteButton from "./FavoritesButton.tsx";
+import {
+  DEFAULT_BASE_CURRENCY,
+  USED_CURRENCIES,
+} from "../constants/constants.ts";
+import { formatAmount } from "../utils/formatAmount.ts";
+import { useAbortController } from "../hooks/useAbortController.ts";
+import { rearrangeFavorites } from "../utils/rearrangeFavorites.ts";
+import CurrencySelect from "./CurrencySelect.tsx";
 
 type Rates = Record<string, number>;
 
 export default function CurrencyRates() {
   const [rates, setRates] = useState<Rates>({});
   const [favorites, setFavorites] = useState<string[]>(loadFavorites());
-  const [baseCurrency, setBaseCurrency] = useState<string>("USD");
+  const [baseCurrency, setBaseCurrency] = useState<string>(
+    DEFAULT_BASE_CURRENCY
+  );
+
+  const controller = useAbortController();
 
   useEffect(() => {
     setFavorites((prevFavorites) => {
@@ -19,25 +31,22 @@ export default function CurrencyRates() {
       return updatedFavorites;
     });
 
-    const controller = new AbortController();
     const fetchRates = async () => {
       try {
         const fetchedRates = await getRates(baseCurrency, controller.signal);
         setRates(fetchedRates);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
           console.error(error);
         }
       }
     };
     fetchRates();
-
-    return () => controller.abort();
-  }, [baseCurrency]);
+  }, [baseCurrency, controller]);
 
   const toggleFavorite = (currency: string) => {
     setFavorites((prevFavorites) => {
-      let updatedFavorites = prevFavorites.includes(currency)
+      const updatedFavorites = prevFavorites.includes(currency)
         ? prevFavorites.filter((item) => item !== currency)
         : [currency, ...prevFavorites.slice(0, 5)];
 
@@ -61,12 +70,11 @@ export default function CurrencyRates() {
     if (!draggedCurrency || draggedCurrency === targetCurrency) return;
 
     setFavorites((prevFavorites) => {
-      const updatedFavorites = [...prevFavorites];
-      const draggedIndex = updatedFavorites.indexOf(draggedCurrency);
-      const targetIndex = updatedFavorites.indexOf(targetCurrency);
-
-      updatedFavorites.splice(draggedIndex, 1);
-      updatedFavorites.splice(targetIndex, 0, draggedCurrency);
+      const updatedFavorites = rearrangeFavorites(
+        prevFavorites,
+        draggedCurrency,
+        targetCurrency
+      );
 
       saveFavorites(updatedFavorites);
       return updatedFavorites;
@@ -77,40 +85,24 @@ export default function CurrencyRates() {
     e.preventDefault();
   };
 
-  const usedCurrencies: string[] = [
-    "USD",
-    "EUR",
-    "RUB",
-    "PLN",
-    "CNY",
-    "GBP",
-    "BYN",
-  ];
-  const formatAmount = (amount: number | "—") =>
-    typeof amount === "number" ? amount.toFixed(2) : "—";
-
   const sortedCurrencies = [
     ...favorites,
-    ...usedCurrencies.filter((currency) => !favorites.includes(currency)),
+    ...USED_CURRENCIES.filter((currency) => !favorites.includes(currency)),
   ];
 
   return (
     <div className="container my-4">
       <div className="card shadow-sm mx-auto" style={{ maxWidth: "800px" }}>
         <div className="card-body">
-          <div className="mb-4">
-            <label className="fw-semibold me-2">Основная валюта:</label>
-            <select
+          <div className="row align-items-center mb-4">
+            <CurrencySelect
+              label="Основная валюта:"
               value={baseCurrency}
-              onChange={(e) => setBaseCurrency(e.target.value)}
-              className="form-select d-inline-block w-auto"
-            >
-              {usedCurrencies.map((currency) => (
-                <option key={currency} value={currency}>
-                  {currency}
-                </option>
-              ))}
-            </select>
+              onChange={setBaseCurrency}
+              options={USED_CURRENCIES}
+              colClass="col-sm-3"
+              labelWidth="col-sm-3"
+            />
           </div>
 
           {favorites.length > 0 && (

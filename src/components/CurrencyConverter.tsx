@@ -1,30 +1,28 @@
 import { useState, useEffect } from "react";
 import { getRates } from "../services/currencyAPI.ts";
 import CurrencySwapButton from "./CurrencySwapButton.tsx";
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce } from "../hooks/useDebounce.ts";
+import {
+  DEBOUNCE_DELAY,
+  DEFAULT_BASE_CURRENCY,
+  DEFAULT_TARGET_CURRENCY,
+  USED_CURRENCIES,
+} from "../constants/constants.ts";
+import CurrencySelect from "./CurrencySelect.tsx";
 
 export default function CurrencyConverter() {
   const [rates, setRates] = useState<Record<string, number>>({});
-  const [baseCurrency, setBaseCurrency] = useState<string>("USD");
-  const [targetCurrency, setTargetCurrency] = useState<string>("BYN");
+  const [baseCurrency, setBaseCurrency] = useState<string>(
+    DEFAULT_BASE_CURRENCY
+  );
+  const [targetCurrency, setTargetCurrency] = useState<string>(
+    DEFAULT_TARGET_CURRENCY
+  );
   const [amount, setAmount] = useState<string>("1");
   const [convertedAmount, setConvertedAmount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
-  const debouncedAmount = useDebounce(amount, 200);
+  const debouncedAmount = useDebounce(amount, DEBOUNCE_DELAY);
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -48,7 +46,7 @@ export default function CurrencyConverter() {
       const targetRate = rates[targetCurrency];
       const convertedValue =
         (parseFloat(debouncedAmount) * targetRate) / baseRate;
-      setConvertedAmount(Math.round(convertedValue * 100) / 100);
+      setConvertedAmount(+convertedValue.toFixed(2));
     }
   }, [debouncedAmount, rates, targetCurrency, baseCurrency]);
 
@@ -62,35 +60,18 @@ export default function CurrencyConverter() {
     setTargetCurrency(baseCurrency);
   };
 
-  const usedCurrencies: string[] = [
-    "BYN",
-    "USD",
-    "EUR",
-    "RUB",
-    "PLN",
-    "CNY",
-    "GBP",
-  ];
-
   return (
     <div className="card shadow-sm mb-4 mx-auto" style={{ maxWidth: "800px" }}>
       <div className="card-body">
         {error && <div className="alert alert-danger">{error}</div>}
         <div className="mb-3 row align-items-center">
-          <label className="col-sm-1 col-form-label fw-semibold">Из:</label>
-          <div className="col-sm-3">
-            <select
-              value={baseCurrency}
-              onChange={(e) => setBaseCurrency(e.target.value)}
-              className="form-select"
-            >
-              {usedCurrencies.map((curr) => (
-                <option key={curr} value={curr}>
-                  {curr}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CurrencySelect
+            label="Из:"
+            value={baseCurrency}
+            onChange={setBaseCurrency}
+            options={USED_CURRENCIES}
+            colClass="col-sm-3"
+          />
           <div className="col-sm-8">
             <input
               type="number"
@@ -103,20 +84,13 @@ export default function CurrencyConverter() {
         </div>
         <CurrencySwapButton onClick={handleSwap} />
         <div className="mb-3 row align-items-center">
-          <label className="col-sm-1 col-form-label fw-semibold">В:</label>
-          <div className="col-sm-3">
-            <select
-              value={targetCurrency}
-              onChange={(e) => setTargetCurrency(e.target.value)}
-              className="form-select"
-            >
-              {usedCurrencies.map((curr) => (
-                <option key={curr} value={curr}>
-                  {curr}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CurrencySelect
+            label="Из:"
+            value={targetCurrency}
+            onChange={setTargetCurrency}
+            options={USED_CURRENCIES}
+            colClass="col-sm-3"
+          />
           <div className="col-sm-8">
             <input
               type="number"
