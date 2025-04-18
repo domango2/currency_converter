@@ -85,7 +85,7 @@ export default function CurrencyConverter() {
         <CurrencySwapButton onClick={handleSwap} />
         <div className="mb-3 row align-items-center">
           <CurrencySelect
-            label="Из:"
+            label="В:"
             value={targetCurrency}
             onChange={setTargetCurrency}
             options={USED_CURRENCIES}
